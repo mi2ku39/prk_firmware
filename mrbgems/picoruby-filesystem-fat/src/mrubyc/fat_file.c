@@ -215,8 +215,8 @@ c_vfs_methods(mrbc_vm *vm, mrbc_value v[], int argc)
     c_tell,
     c_size,
     c_fsync,
-    c__exist_q,
-    c__unlink
+    fat__exist_q,
+    fat__unlink
   };
   mrbc_value methods = mrbc_instance_new(vm, class_FAT_VFSMethods, sizeof(prb_vfs_methods));
   memcpy(methods.instance->data, &m, sizeof(prb_vfs_methods));

@@ -47,9 +47,9 @@ void mrb_init_class_FAT_Dir(mrb_state *mrb, struct RClass *class_FAT);
 
 #elif defined(PICORB_VM_MRUBYC)
 
-void c__exist_q(mrbc_vm *vm, mrbc_value v[], int argc);
-void c__unlink(mrbc_vm *vm, mrbc_value v[], int argc);
-void c__rename(mrbc_vm *vm, mrbc_value v[], int argc);
+void fat__exist_q(mrbc_vm *vm, mrbc_value v[], int argc);
+void fat__unlink(mrbc_vm *vm, mrbc_value v[], int argc);
+void fat__rename(mrbc_vm *vm, mrbc_value v[], int argc);
 
 typedef struct prb_vfs_methods
 {

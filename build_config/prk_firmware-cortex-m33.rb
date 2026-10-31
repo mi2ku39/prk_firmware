@@ -50,7 +50,7 @@ MRuby::CrossBuild.new("prk_firmware-cortex-m33") do |conf|
     conf.cc.defines << "USE_FAT_SD_DISK=1"
   end
 
-  conf.gembox "prk_firmware"
+  conf.gembox File.expand_path("../mrbgems/prk_firmware", __dir__)
 
   conf.femtoruby(alloc_libc: false)
 

@@ -280,10 +280,10 @@ mrbc_filesystem_fat_init(mrbc_vm *vm)
   mrbc_define_method(vm, class_FAT, "_chdir", c__chdir);
   mrbc_define_method(vm, class_FAT, "_utime", c__utime);
   mrbc_define_method(vm, class_FAT, "_mkdir", c__mkdir);
-  mrbc_define_method(vm, class_FAT, "_unlink", c__unlink);
-  mrbc_define_method(vm, class_FAT, "_rename", c__rename);
+  mrbc_define_method(vm, class_FAT, "_unlink", fat__unlink);
+  mrbc_define_method(vm, class_FAT, "_rename", fat__rename);
   mrbc_define_method(vm, class_FAT, "_chmod", c__chmod);
-  mrbc_define_method(vm, class_FAT, "_exist?", c__exist_q);
+  mrbc_define_method(vm, class_FAT, "_exist?", fat__exist_q);
   mrbc_define_method(vm, class_FAT, "_directory?", c__directory_q);
   mrbc_define_method(vm, class_FAT, "_setlabel", c__setlabel);
   mrbc_define_method(vm, class_FAT, "_getlabel", c__getlabel);
@@ -302,7 +302,7 @@ mrbc_filesystem_fat_init(mrbc_vm *vm)
 
 
 void
-c__exist_q(mrbc_vm *vm, mrbc_value v[], int argc)
+fat__exist_q(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   TCHAR *path = (TCHAR *)GET_STRING_ARG(1);
   FILINFO fno = {0};
@@ -315,7 +315,7 @@ c__exist_q(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 void
-c__unlink(mrbc_vm *vm, mrbc_value v[], int argc)
+fat__unlink(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   TCHAR *path = (TCHAR *)GET_STRING_ARG(1);
   FRESULT res = f_unlink(path);
@@ -324,7 +324,7 @@ c__unlink(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 void
-c__rename(mrbc_vm *vm, mrbc_value v[], int argc)
+fat__rename(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   TCHAR *from = (TCHAR *)GET_STRING_ARG(1);
   TCHAR *to = (TCHAR *)GET_STRING_ARG(2);

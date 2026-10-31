@@ -8,7 +8,7 @@ if RUBY_ENGINE == 'mruby/c'
   require "watchdog"
   require "picorubyvm"
   require "vfs"
-  require "littlefs"
+  require "filesystem-fat"
   require "io/console"
 end
 
@@ -440,13 +440,13 @@ class Keyboard
     when "NO_MSC"
       return
     when "MSC_FLASH"
-      $volume = Littlefs.new(:flash, label: DRIVE_NAME)
+      $volume = FAT.new(:flash, label: DRIVE_NAME)
     when "MSC_SD"
       spi_unit, sck, cipo, copi, cs = :RP2040_SPI1, 26, 24, 27, 25
       spi = SPI.new(frequency: 5_000_000, unit: spi_unit,
                     sck_pin:  sck,  cipo_pin: cipo,
                     copi_pin: copi, cs_pin:   cs)
-      $volume = Littlefs.new(:sd, label: DRIVE_NAME, driver: spi)
+      $volume = FAT.new(:sd, label: DRIVE_NAME, driver: spi)
     end
     begin
       VFS.mount($volume, "/")

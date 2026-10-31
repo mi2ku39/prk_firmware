@@ -1,21 +1,23 @@
 MRuby::GemBox.new do |conf|
+  # Gems that were removed from picoruby upstream live next to this gembox
+  prk_gems = File.dirname(MRuby::GemBox.path)
 
   conf.gem core: 'mruby-compiler'
   conf.gem core: 'picoruby-mrubyc'
   conf.gem core: "picoruby-require"
   conf.gem core: 'picoruby-vfs'
-  conf.gem core: 'picoruby-littlefs'
+  conf.gem "#{prk_gems}/picoruby-filesystem-fat"
   conf.gem core: 'picoruby-numeric-ext'
-  conf.gem core: 'picoruby-music-macro-language'
-  conf.gem core: 'picoruby-prk-consumer_key'
-  conf.gem core: 'picoruby-prk-debounce'
-  conf.gem core: 'picoruby-prk-joystick'
-  conf.gem core: 'picoruby-prk-mouse'
-  conf.gem core: 'picoruby-prk-keyboard'
-  conf.gem core: 'picoruby-prk-rgb'
-  conf.gem core: 'picoruby-prk-rotary_encoder'
-  conf.gem core: 'picoruby-prk-sounder'
-  conf.gem core: 'picoruby-prk-via'
+  conf.gem "#{prk_gems}/picoruby-music-macro-language"
+  conf.gem "#{prk_gems}/picoruby-prk-consumer_key"
+  conf.gem "#{prk_gems}/picoruby-prk-debounce"
+  conf.gem "#{prk_gems}/picoruby-prk-joystick"
+  conf.gem "#{prk_gems}/picoruby-prk-mouse"
+  conf.gem "#{prk_gems}/picoruby-prk-keyboard"
+  conf.gem "#{prk_gems}/picoruby-prk-rgb"
+  conf.gem "#{prk_gems}/picoruby-prk-rotary_encoder"
+  conf.gem "#{prk_gems}/picoruby-prk-sounder"
+  conf.gem "#{prk_gems}/picoruby-prk-via"
   conf.gem core: 'picoruby-i2c'
   conf.gem core: 'picoruby-spi'
   conf.gem core: 'picoruby-adc'
