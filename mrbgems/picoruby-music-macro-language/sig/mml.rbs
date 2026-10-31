@@ -1,0 +1,43 @@
+class MML
+  type command_t = :volume | :env_shape | :env_period | :lfo | :pan | :timbre | :mixer | :noise | :mute | :segno
+  type play_t    = :play
+  type event_t   = [(play_t | command_t), Array[Integer | Float | 0 | nil]]
+
+  DURATION_BASE: Float
+  NOTES: Hash[Integer, Integer]
+
+  @octave: Integer
+  @tempo: Integer
+  @q: Integer
+  @volume: Integer | nil
+  @transpose: Integer
+  @common_duration: Integer
+  @raise_err: bool
+  @total_duration: Integer
+  @detune: Integer
+  @track: String
+  @cursor: Integer
+  @finished: boolish
+  @event_queue: Array[event_t]
+  @queue_index: Integer
+  @loop: bool
+  @segno_pos: Integer
+
+  attr_reader track_id: Integer
+
+  def self.compile_multi: (Array[String] tracks, ?exception: bool, ?loop: bool) { (Integer delta, Integer channel, command_t | play_t command, *Integer args) -> untyped } -> Integer
+
+  def initialize: (Integer track_id, String track, ?exception: bool, ?loop: bool) -> void
+  def reduce_next: () -> (event_t | nil)
+  private def push_event: (play_t command, Integer | Float arg1, Integer arg2) -> void
+                        | (command_t command, ?Integer arg1, ?Integer arg2) -> void
+  private def shift_event: () -> (event_t | nil)
+  private def event_exist?: () -> bool
+  private def get_pitch: (Integer note, Integer | nil semitone) -> Float
+  private def subvalue: () -> (Integer | nil)
+  private def punti: () -> Integer
+  private def coef: (Integer count) -> Float
+  private def expand_loops: (String track) -> String
+  private def expand: (String str, Integer index, ?Integer depth) -> [String, Integer]
+  private def update_common_duration: (Integer | Float fraction) -> void
+end
