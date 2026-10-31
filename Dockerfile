@@ -1,30 +1,32 @@
 # Document:
 # https://github.com/picoruby/prk_firmware/wiki/Docker
 
-FROM --platform=amd64 manjarolinux/base AS build
+FROM --platform=amd64 ubuntu:24.04 AS build
 
-RUN pacman -Sy --noconfirm \
-  cmake \
-  arm-none-eabi-gcc \
-  arm-none-eabi-newlib \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
   ca-certificates \
+  cmake \
+  gcc-arm-none-eabi \
   git \
-  gcc \
-  make \
-  zip \
-  python \
+  libnewlib-arm-none-eabi \
+  libstdc++-arm-none-eabi-newlib \
+  python3 \
+  rake \
   ruby \
-  ruby-rake \
-  ruby-bundler
+  ruby-bundler \
+  ruby-dev \
+  zip \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/raspberrypi/pico-sdk.git -b 2.3.0
-RUN cd /pico-sdk/lib && git submodule update --init ./
-ENV PICO_SDK_PATH "/pico-sdk"
+RUN cd /pico-sdk && git submodule update --init lib/tinyusb
+ENV PICO_SDK_PATH="/pico-sdk"
 
-ENV PRK_HOME /prk_firmware
+ENV PRK_HOME=/prk_firmware
 VOLUME "${PRK_HOME}"
 WORKDIR "${PRK_HOME}"
 COPY . .
 RUN rake setup
-RUN git config --global --add safe.directory /prk_firmware
-
+RUN git config --global --add safe.directory '*'
