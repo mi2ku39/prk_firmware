@@ -1,5 +1,17 @@
 # Change log
 
+## Unreleased
+
+### Breaking Change 💣
+- pico-sdk 2.3.0 is required (was 2.1.0). pico-extras is no longer needed
+- `lib/picoruby` now points to the [mi2ku39/picoruby](https://github.com/mi2ku39/picoruby) fork, updated to the latest PicoRuby
+
+### Improvement 🔈
+- Build PRK Firmware on top of the latest PicoRuby
+  - PicoRuby upstream removed the PRK gems, their build configs and `picoruby-filesystem-fat`. These now live in `mrbgems/` and `build_config/` of this repository
+  - The keyboard volume uses FAT again (upstream had switched it to littlefs, which a PC cannot mount as a USB drive)
+- `rake setup` fetches only the PicoRuby submodules the firmware needs
+
 ## 0.10.0 on 2024/11/17
 
 Almost one year has passed since the last release. We have been working on improving the PRK Firmware!
