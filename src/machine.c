@@ -41,7 +41,7 @@ c_rand(mrbc_vm *vm, mrbc_value *v, int argc)
 void
 prk_init_Machine()
 {
-  mrbc_class *mrbc_class_Machine = mrbc_define_class(0, "Machine", mrbc_class_object);
+  mrbc_class *mrbc_class_Machine = mrbc_define_module(0, "Machine");
   mrbc_define_method(0, mrbc_class_Machine, "delay_us", c_delay_us);
   mrbc_define_method(0, mrbc_class_Machine, "reset_usb_boot", c_reset_usb_boot);
   mrbc_define_method(0, mrbc_class_Machine, "board_millis", c_board_millis);

@@ -10,13 +10,21 @@ include(pico_extras_import.cmake)
 
 add_definitions(
   -DMRBC_REQUIRE_32BIT_ALIGNMENT
-  -DMAX_REGS_SIZE=256
+  -DMAX_REGS_SIZE=255
   -DMAX_VM_COUNT=255
   -DMAX_SYMBOLS_COUNT=1800
   -DMRBC_CONVERT_CRLF
   -DMRBC_USE_MATH
   -DMRBC_USE_FLOAT=2
   -DNO_CLOCK_GETTIME=1
+  # Keep in sync with libmruby (lib/picoruby/lib/picoruby/build.rb#femtoruby)
+  -DPICORB_INT64
+  -DMRBC_INT64
+  -DPICORB_VM_MRUBYC
+  -DMRBC_SCHEDULER_EXIT=1
+  -DMRBC_USE_ALLOC_PROF
+  -DMRBC_TICK_UNIT=1
+  -DMRBC_TIMESLICE_TICK_COUNT=10
 )
 
 execute_process (COMMAND date +%Y%m%d OUTPUT_VARIABLE CMAKE_BUILDDATE OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -29,13 +37,13 @@ configure_file ("${CMAKE_SOURCE_DIR}/include/version.h.in" "${CMAKE_SOURCE_DIR}/
 
 if(DEFINED ENV{PICORUBY_NO_MSC})
   set (MSC_NAME NO_MSC)
-  add_definitions(-DPICORUBY_NO_MSC)
+  add_definitions(-DPICORUBY_NO_MSC -DPICORB_NO_MSC)
 elseif(DEFINED ENV{PICORUBY_MSC_SD})
   set (MSC_NAME MSC_SD)
-  add_definitions(-DPICORUBY_MSC_SD)
+  add_definitions(-DPICORUBY_MSC_SD -DPICORB_MSC_SD)
 else()
   set (MSC_NAME MSC_FLASH)
-  add_definitions(-DPICORUBY_MSC_FLASH)
+  add_definitions(-DPICORUBY_MSC_FLASH -DPICORB_MSC_FLASH)
 endif()
 
 if(DEFINED ENV{PICORUBY_SQLITE3})
@@ -79,9 +87,9 @@ add_compile_options(-Wall
 file(GLOB SRCS src/*.c)
 add_executable(${PROJECT_NAME}
   ${SRCS}
-  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-filesystem-fat/ports/rp2040/flash_disk.c
-  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-filesystem-fat/ports/rp2040/sd_disk.c
-  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-filesystem-fat/ports/rp2040/msc_disk.c
+  ${CMAKE_SOURCE_DIR}/mrbgems/picoruby-filesystem-fat/ports/rp2040/flash_disk.c
+  ${CMAKE_SOURCE_DIR}/mrbgems/picoruby-filesystem-fat/ports/rp2040/sd_disk.c
+  ${CMAKE_SOURCE_DIR}/mrbgems/picoruby-filesystem-fat/ports/rp2040/msc_disk.c
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-gpio/ports/rp2040/gpio.c
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-i2c/ports/rp2040/i2c.c
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-spi/ports/rp2040/spi.c
@@ -93,14 +101,17 @@ add_executable(${PROJECT_NAME}
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-watchdog/ports/rp2040/watchdog.c
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-rng/ports/rp2040/rng.c
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-env/ports/rp2040/env.c
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-machine/ports/common/machine.c
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-require/ports/rp2040/platform.c
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-littlefs/ports/rp2040/flash_hal.c
 )
 
-set(PICORBC ${CMAKE_SOURCE_DIR}/lib/picoruby/bin/picorbc)
+set(PICORBC ${CMAKE_SOURCE_DIR}/lib/picoruby/build/mrbc/default/bin/mrbc)
 
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/src/ws2812.pio)
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/src/sounder.pio)
 
-set(RBC ${CMAKE_CURRENT_SOURCE_DIR}/lib/picoruby/bin/picorbc)
+set(RBC ${CMAKE_CURRENT_SOURCE_DIR}/lib/picoruby/build/mrbc/default/bin/mrbc)
 #set(RBC RBENV_VERSION=mruby-3.2.0 mrbc) # In case of PicoRuby compiler enbugged 😵
 
 # Ruby
@@ -140,12 +151,19 @@ add_dependencies(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/tinyusb
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/include
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/include/picoruby
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-mrubyc/include
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-machine/include
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-mrubyc/lib/mrubyc/src
-  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-filesystem-fat/lib/ff14b/source
+  ${CMAKE_SOURCE_DIR}/mrbgems/picoruby-filesystem-fat/lib/ff14b/source
   ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems
   ${CMAKE_SOURCE_DIR}/lib/picoruby/build/${BUILD_CONFIG}/mrbgems
-  ${CMAKE_SOURCE_DIR}/lib/picoruby/build/repos/${BUILD_CONFIG}/mruby-compiler2/include
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/mruby-compiler/include
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/build/prism/include
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/mruby-compiler/lib/prism/include
+  ${CMAKE_SOURCE_DIR}/lib/picoruby/mrbgems/picoruby-mruby/lib/mruby/include
+  ${CMAKE_SOURCE_DIR}/mrbgems
   ${CMAKE_SOURCE_DIR}/${BUILD_DIR}/mrb
 )
 
@@ -168,14 +186,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   hardware_i2c
   hardware_spi
   hardware_pwm
+  pico_low_power
+  pico_rand
+  pico_aon_timer
   mruby
 )
-# Workaround for Pico2
-if(NOT DEFINED ENV{PICO2})
-  target_link_libraries(${PROJECT_NAME} PRIVATE
-    hardware_sleep
-  )
-endif()
 
 # create map/bin/hex/uf2 file in addition to ELF.
 pico_add_extra_outputs(${PROJECT_NAME})

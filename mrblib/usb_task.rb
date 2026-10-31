@@ -10,7 +10,7 @@ STDOUT = IO
 STDIN = IO
 STDIN.echo = false
 
-if PICORUBY_MSC == "MSC_SD"
+if PICORB_MSC == "MSC_SD"
   require "spi"
 end
 require "keyboard"
