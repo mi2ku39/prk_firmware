@@ -142,6 +142,7 @@ foreach(rb ${RUBY_TASK_FILES})
       -o${CMAKE_SOURCE_DIR}/${BUILD_DIR}/mrb/${rb}.c
       ${CMAKE_SOURCE_DIR}/mrblib/${rb}.rb
   )
+  add_dependencies(${rb} mrbdir)
 endforeach(rb)
 
 add_dependencies(${PROJECT_NAME}
