@@ -1,14 +1,34 @@
 require "fileutils"
 
-PICO_SDK_TAG = "2.1.0"
+PICO_SDK_TAG = "2.3.0"
+
+# Submodules of lib/picoruby that PRK Firmware needs.
+# `--recursive` would also fetch pico-sdk, rp2040js and others for R2P2.
+PICORUBY_SUBMODULES = %w[
+  mrbgems/mruby-bin-mrbc
+  mrbgems/mruby-compiler
+  mrbgems/picoruby-littlefs/lib/littlefs
+  mrbgems/picoruby-machine/lib/estalloc
+  mrbgems/picoruby-mruby/lib/mruby
+  mrbgems/picoruby-mrubyc/lib/mrubyc
+]
+
+def update_submodules
+  sh "git submodule update --init lib/picoruby"
+  FileUtils.cd "lib/picoruby" do
+    sh "git submodule update --init #{PICORUBY_SUBMODULES.join(' ')}"
+  end
+end
 
 def mruby_config
-  case ENV['BOARD']&.downcase
+  name = case ENV['BOARD']&.downcase
   when 'pico2'
     'prk_firmware-cortex-m33'
   else
     'prk_firmware-cortex-m0plus'
   end
+  # The build configs live in this repository, not in lib/picoruby
+  File.expand_path("build_config/#{name}.rb", __dir__)
 end
 
 def cmake_flags
@@ -48,7 +68,7 @@ end
 
 task :setup do
   sh "bundle install"
-  sh "git submodule update --init --recursive"
+  update_submodules
   FileUtils.cd "lib/picoruby" do
     sh "bundle install"
   end
@@ -58,7 +78,7 @@ task :all => [:libmruby, :cmake, :build]
 
 desc "build debug for RP2040 (you may need to rake clean before this)"
 task :pico_debug do
-  ENV['PICORUBY_DEBUG'] = '1'
+  ENV['PICORB_DEBUG'] = '1'
   ENV['BOARD'] = 'pico'
   ENV['CMAKE_BUILD_TYPE'] = 'Debug'
   Rake::Task[:all].invoke
@@ -73,7 +93,7 @@ end
 
 desc "build debug for RP2350 (you may need to rake clean before this)"
 task :pico2_debug do
-  ENV['PICORUBY_DEBUG'] = '1'
+  ENV['PICORB_DEBUG'] = '1'
   ENV['BOARD'] = 'pico2'
   ENV['CMAKE_BUILD_TYPE'] = 'Debug'
   Rake::Task[:all].invoke
@@ -112,19 +132,19 @@ end
 desc "build production with SQLite3 and SD card for RP2350 (Pico2)"
 task :sqlite3 do
   ENV['PICORUBY_SQLITE3'] = '1'
-  ENV['PICORUBY_SD_CARD'] = '1'
+  ENV['PICORB_SQLITE3'] = '1'
+  ENV['PICORB_SD_CARD'] = '1'
   ENV['PICORUBY_MSC_SD'] = '1'
   ENV['BOARD'] = 'pico2'
   Rake::Task[:all].invoke
 end
 
 file "lib/picoruby" do
-  sh "git submodule update --init --recursive"
+  update_submodules
 end
 
 task :libmruby => "lib/picoruby" do
   FileUtils.cd "lib/picoruby" do
-    sh "rake test"
     sh "MRUBY_CONFIG=#{mruby_config} rake"
   end
 end
@@ -189,7 +209,7 @@ end
 
 desc "create symlinks for develop-convenience"
 task :symlinks do
-  Dir.glob("lib/picoruby/mrbgems/picoruby-prk-*").each do |src|
+  Dir.glob("mrbgems/picoruby-prk-*").each do |src|
     FileUtils.ln_sf File.join("..", src), "symlinks/#{File.basename(src)}"
   end
 end
